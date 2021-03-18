@@ -4,22 +4,22 @@ import pickle
 
 def preprocess_data(train_df, account_df, sale_df, features, cat_features):
     train_df = build_RW000076(train_df, account_df, sale_df)
-    data['request_date_dt'] = pd.to_datetime(data['request_date'], format='%Y-%m-%d %H:%M:%S')
-    #data['request_date'] = (data['request_date_dt'] - data['request_date_dt'].min()).days
-    data['date_diff'] = (data['request_date_dt'] - data['request_date_dt'].min()).dt.days
+    train_df['request_date_dt'] = pd.to_datetime(train_df['request_date'], format='%Y-%m-%d %H:%M:%S')
+    #train_df['request_date'] = (train_df['request_date_dt'] - train_df['request_date_dt'].min()).days
+    train_df['date_diff'] = (train_df['request_date_dt'] - train_df['request_date_dt'].min()).dt.days
     
-    data["same_name"] = data["cust_name"]==data["ben_cust_name"]
-    data["same_phone"] = data["msisdn"]==data["ben_msisdn"]
-    data["same_phone_channel"] = data["msisdn"]==data["msisdn_channel"]
-    data["same_phone_channel_ben"] = data["ben_msisdn"]==data["msisdn_channel"]
+    train_df["same_name"] = train_df["cust_name"]==train_df["ben_cust_name"]
+    train_df["same_phone"] = train_df["msisdn"]==train_df["ben_msisdn"]
+    train_df["same_phone_channel"] = train_df["msisdn"]==train_df["msisdn_channel"]
+    train_df["same_phone_channel_ben"] = train_df["ben_msisdn"]==train_df["msisdn_channel"]
     
-    data[cat_features] = data[cat_features].fillna(value="")
-    #data[cat_features].fillna('', inplace=True)
+    train_df[cat_features] = train_df[cat_features].fillna(value="")
+    #train_df[cat_features].fillna('', inplace=True)
     
     
     
-    y = data['is_fraud']
-    X = data.drop(['is_fraud'], axis = 1)
+    y = train_df['is_fraud']
+    X = train_df.drop(['is_fraud'], axis = 1)
     X = X[features]
     return X, y
 
