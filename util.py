@@ -58,7 +58,7 @@ def load_model(filename):
     return pickle.load(open(filename, 'rb'))
 
 def build_RW000076(train_df, account_df, sale_df):
-    account_sale_df = sale_df.merge, account_df, (account_df, how='inner', left_on=['account_sale_id', 'phone'], right_on=['account_sale_id', 'msisdn'])
+    account_sale_df = sale_df.merge(account_df, how='inner', left_on=['account_sale_id', 'phone'], right_on=['account_sale_id', 'msisdn'])
     account_sale_df = account_sale_df[["phone","staff_code"]]
     train_df = train_df.merge(account_sale_df, how='left', left_on=['ben_msisdn','staff_code'], right_on=['phone','staff_code'])
     train_df["RW000076"] = pd.notnull(train_df["phone"])
