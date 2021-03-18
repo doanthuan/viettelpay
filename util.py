@@ -2,8 +2,8 @@ import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, precision_score, recall_score, f1_score
 import pickle
 
-def preprocess_data(data, features, cat_features):
-    data = build_RW000076(data)
+def preprocess_data(train_df, account_df, sale_df, features, cat_features):
+    train_df = build_RW000076(train_df, account_df, sale_df)
     data['request_date_dt'] = pd.to_datetime(data['request_date'], format='%Y-%m-%d %H:%M:%S')
     #data['request_date'] = (data['request_date_dt'] - data['request_date_dt'].min()).days
     data['date_diff'] = (data['request_date_dt'] - data['request_date_dt'].min()).dt.days
@@ -57,10 +57,8 @@ def save_model(model, filename):
 def load_model(filename):
     return pickle.load(open(filename, 'rb'))
 
-def build_RW000076(train_df):
-    account_df = pd.read_parquet("data/account_sale_mapping.snappy.parquet")
-    sale_df = pd.read_parquet("data/account_sale.snappy.parquet")
-    account_sale_df = sale_df.merge(account_df, how='inner', left_on=['account_sale_id', 'phone'], right_on=['account_sale_id', 'msisdn'])
+def build_RW000076(train_df, account_df, sale_df):
+    account_sale_df = sale_df.merge, account_df, (account_df, how='inner', left_on=['account_sale_id', 'phone'], right_on=['account_sale_id', 'msisdn'])
     account_sale_df = account_sale_df[["phone","staff_code"]]
     train_df = train_df.merge(account_sale_df, how='left', left_on=['ben_msisdn','staff_code'], right_on=['phone','staff_code'])
     train_df["RW000076"] = pd.notnull(train_df["phone"])
