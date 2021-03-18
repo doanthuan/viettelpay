@@ -2,7 +2,8 @@ import pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, precision_score, recall_score, f1_score
 import pickle
 
-def preprocess_data(data, cat_features):
+def preprocess_data(data, features, cat_features):
+    data = build_RW000076(data)
     data['request_date_dt'] = pd.to_datetime(data['request_date'], format='%Y-%m-%d %H:%M:%S')
     #data['request_date'] = (data['request_date_dt'] - data['request_date_dt'].min()).days
     data['date_diff'] = (data['request_date_dt'] - data['request_date_dt'].min()).dt.days
@@ -11,33 +12,16 @@ def preprocess_data(data, cat_features):
     data["same_phone"] = data["msisdn"]==data["ben_msisdn"]
     data["same_phone_channel"] = data["msisdn"]==data["msisdn_channel"]
     data["same_phone_channel_ben"] = data["ben_msisdn"]==data["msisdn_channel"]
-    USE_COLS = [
-        "province_code",
-        "district_code",
-        "date_diff",
-        "viettel_bank_code",
-        "channel_type_id",
-        "channel_code",
-        "staff_code",
-        "trans_amount",
-        "trans_fee",
-        "trans_type",
-        "process_code",
-        "channel_fee",
-        "shop_code",
-        "customer_fee",
-        "fee_partner",
-        "is_fraud",
-        "same_name",
-        "same_phone",
-        "same_phone_channel",
-        "same_phone_channel_ben"
-    ]
-    data = data[USE_COLS]
-
+    
     data[cat_features] = data[cat_features].fillna(value="")
     #data[cat_features].fillna('', inplace=True)
-    return data
+    
+    
+    
+    y = data['is_fraud']
+    X = data.drop(['is_fraud'], axis = 1)
+    X = X[features]
+    return X, y
 
 
 def split_data(data):
@@ -72,3 +56,12 @@ def save_model(model, filename):
 
 def load_model(filename):
     return pickle.load(open(filename, 'rb'))
+
+def build_RW000076(train_df):
+    account_df = pd.read_parquet("data/account_sale_mapping.snappy.parquet")
+    sale_df = pd.read_parquet("data/account_sale.snappy.parquet")
+    account_sale_df = sale_df.merge(account_df, how='inner', left_on=['account_sale_id', 'phone'], right_on=['account_sale_id', 'msisdn'])
+    account_sale_df = account_sale_df[["phone","staff_code"]]
+    train_df = train_df.merge(account_sale_df, how='left', left_on=['ben_msisdn','staff_code'], right_on=['phone','staff_code'])
+    train_df["RW000076"] = pd.notnull(train_df["phone"])
+    return train_df
