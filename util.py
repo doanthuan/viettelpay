@@ -5,11 +5,13 @@ import pickle
 def preprocess_data(train, account, sale, trans_hist, features, cat_features):
     
     # aggregate trans hist data
+    trans_hist = trans_hist.groupby(['msisdn'], as_index=False).agg({'trans_amount':['sum', 'mean']})
+    trans_hist.columns = ['_'.join(col) for col in trans_hist.columns]
     train = train.merge(trans_hist, how='left', left_on=['ben_msisdn'], right_on=['msisdn_'])
+    
     
     #aggregate account, sale data
     train = build_RW000076(train, account, sale)
-    
     
     train['request_date_dt'] = pd.to_datetime(train['request_date'], format='%Y-%m-%d %H:%M:%S')
     #train['request_date'] = (train['request_date_dt'] - train['request_date_dt'].min()).days
@@ -21,7 +23,6 @@ def preprocess_data(train, account, sale, trans_hist, features, cat_features):
 #     train["same_phone_channel_ben"] = train["ben_msisdn"]==train["msisdn_channel"]
     
     train[cat_features] = train[cat_features].fillna(value="")
-    #train[cat_features].fillna('', inplace=True)
     
     y = train['is_fraud']
     X = train.drop(['is_fraud'], axis = 1)
